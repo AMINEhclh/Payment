@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Payment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #0f0f0f;
+            color: white;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.3;
+            }
+            90% {
+                opacity: 0.2;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            background-color: rgba(25, 25, 25, 0.85);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .countdown {
+            margin: 30px 0;
+            position: relative;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .countdown-circle {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .countdown-circle-progress {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top: 4px solid red;
+            transform: rotate(-90deg);
+            transition: transform 1s linear;
+            animation: countdown-rotate 5400s linear forwards;
+        }
+
+        @keyframes countdown-rotate {
+            from { transform: rotate(-90deg); }
+            to { transform: rotate(270deg); }
+        }
+
+        .countdown-time {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .countdown-label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .address {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 16px;
+            word-break: break-all;
+            max-width: 100%;
+        }
+
+        .network {
+            margin: 15px 0;
+            font-size: 20px;
+        }
+
+        .qr-code {
+            width: 150px;
+            height: 150px;
+            margin: 20px 0;
+        }
+
+        .transfer-btn {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: #00b894;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .transfer-btn:hover {
+            background-color: #00a884;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+        }
+
+        .success-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background-color: white;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .success-icon:after {
+            content: '';
+            width: 10px;
+            height: 5px;
+            border-left: 2px solid #00b894;
+            border-bottom: 2px solid #00b894;
+            position: absolute;
+            top: 6px;
+            left: 5px;
+            transform: rotate(-45deg);
+        }
+
+        .result-page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success .result-icon {
+            background-color: rgba(0, 184, 148, 0.2);
+            color: #00b894;
+        }
+
+        .declined .result-icon {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+
+        .success-checkmark {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+
+        .success-checkmark:before {
+            content: '';
+            width: 20px;
+            height: 10px;
+            border-left: 4px solid #00b894;
+            border-bottom: 4px solid #00b894;
+            position: absolute;
+            top: 15px;
+            left: 10px;
+            transform: rotate(-45deg);
+        }
+
+        .declined-x {
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+
+        .declined-x:before, .declined-x:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 4px;
+            background-color: #ff0000;
+            top: 18px;
+        }
+
+        .declined-x:before {
+            transform: rotate(45deg);
+        }
+
+        .declined-x:after {
+            transform: rotate(-45deg);
+        }
+
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-message {
+            font-size: 16px;
+            opacity: 0.8;
+            max-width: 300px;
+            margin: 0 auto 20px;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation" id="background-animation"></div>
+
+    <div class="container" id="payment-page">
+        <div class="countdown">
+            <div class="countdown-circle"></div>
+            <div class="countdown-circle-progress"></div>
+            <div class="countdown-time" id="countdown-time">1:30:00</div>
+            <div class="countdown-label">Time remaining</div>
+        </div>
+
+        <div class="address">1ASXnEFYFKH95jwpddEGvZqwoxM1TzbN8Y</div>
+
+        <div class="network">NETWORK: BTC</div>
+
+        <div class="qr-code">
+            <img src="Screenshot 2025-03-03 204138.jpg" alt="QR Code" width="150" height="150">
+        </div>
+
+        <button class="transfer-btn" id="transfer-done-btn">
+            <span class="success-icon"></span> TRANSFER DONE
+        </button>
+    </div>
+
+    <div class="container result-page success" id="success-page">
+        <div class="result-icon">
+            <div class="success-checkmark"></div>
+        </div>
+        <div class="result-title">Payment Confirmed</div>
+        <div class="result-message">
+            Your transaction has been successfully processed. Thank you for your payment.
+        </div>
+        <button class="back-btn" id="success-back-btn">Return to Dashboard</button>
+    </div>
+
+    <div class="container result-page declined" id="declined-page">
+        <div class="result-icon">
+            <div class="declined-x"></div>
+        </div>
+        <div class="result-title">Payment Declined</div>
+        <div class="result-message">
+            Your transaction was not completed within the time limit. Please try again.
+        </div>
+        <button class="back-btn" id="declined-back-btn">Try Again</button>
+    </div>
+
+    <script>
+        // Create background particles
+        const backgroundAnimation = document.getElementById('background-animation');
+        
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 100 + 50;
+                const posX = Math.random() * window.innerWidth;
+                const posY = Math.random() * window.innerHeight + window.innerHeight;
+                const delay = Math.random() * 15;
+                const duration = Math.random() * 30 + 15;
+                const color = `hsl(${Math.random() * 60 + 210}, 70%, 60%)`;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${posX}px`;
+                particle.style.bottom = `${-posY}px`;
+                particle.style.backgroundColor = color;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                backgroundAnimation.appendChild(particle);
+            }
+        }
+        
+        createParticles();
+
+        // Countdown timer
+        const countdownDisplay = document.getElementById('countdown-time');
+        const paymentPage = document.getElementById('payment-page');
+        const successPage = document.getElementById('success-page');
+        const declinedPage = document.getElementById('declined-page');
+        const transferDoneBtn = document.getElementById('transfer-done-btn');
+        const successBackBtn = document.getElementById('success-back-btn');
+        const declinedBackBtn = document.getElementById('declined-back-btn');
+        
+        // Set the countdown time - 1 hour and 30 minutes
+        let totalSeconds = 90 * 60; // 5400 seconds
+        
+        function updateCountdown() {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            countdownDisplay.textContent = `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (totalSeconds <= 0) {
+                clearInterval(countdownInterval);
+                showDeclinedPage();
+            }
+            
+            totalSeconds--;
+        }
+        
+        // Start the countdown
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        
+        // Button event listeners
+        transferDoneBtn.addEventListener('click', function() {
+            clearInterval(countdownInterval);
+            showSuccessPage();
+        });
+        
+        successBackBtn.addEventListener('click', resetPage);
+        declinedBackBtn.addEventListener('click', resetPage);
+        
+        function showSuccessPage() {
+            paymentPage.style.display = 'none';
+            declinedPage.style.display = 'none';
+            successPage.style.display = 'flex';
+        }
+        
+        function showDeclinedPage() {
+            paymentPage.style.display = 'none';
+            successPage.style.display = 'none';
+            declinedPage.style.display = 'flex';
+        }
+        
+        function resetPage() {
+            // For demonstration purposes, just reload the page
+            location.reload();
+        }
+    </script>
+</body>
+</html>
